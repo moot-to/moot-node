@@ -94,5 +94,6 @@ module.exports = {
 	getTree,
 	sendTweet,
 	likeTweet,
-	dislikeTweet
+	dislikeTweet,
+	logout
 }

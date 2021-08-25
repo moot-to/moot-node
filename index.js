@@ -44,7 +44,8 @@ const routes = [
 	{ alias: 'status', path: '/status/:id', callback: resolvers.getTweet },
 	{ alias: 'tweet', path: '/tweet', callback: resolvers.sendTweet, protected: true },
 	{ alias: 'like', path: '/like/:id', callback: resolvers.likeTweet, protected: true },
-	{ alias: 'dislike', path: '/dislike/:id', callback: resolvers.dislikeTweet, protected: true }
+	{ alias: 'dislike', path: '/dislike/:id', callback: resolvers.dislikeTweet, protected: true },
+	{ alias: 'logout', path: '/logout', callback: resolvers.logout, protected: true },
 ];
 
 const protected_routes = routes.filter(route => Boolean(route.protected)).map(route => route.alias);
