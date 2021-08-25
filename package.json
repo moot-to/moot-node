@@ -1,4 +1,7 @@
 {
+	"scripts": {
+		"deploy": "ssh -i ~/.moot.pem ubuntu@3.120.152.26 'cd /home/ubuntu/moot-node/ && git pull origin master'"
+	},
   "dependencies": {
     "body-parser": "^1.19.0",
     "connect-redis": "^6.0.0",
