@@ -10,7 +10,6 @@ const cors = require('cors');
 const models = require('./models')
 const resolvers = require('./resolvers')
 const oauthSession = require('./oauth')
-var fs = require('fs')
 
 var client = redis.createClient();
 var CONSUMER_KEY = process.env.CONSUMER_KEY;
@@ -22,7 +21,6 @@ app.use(cors({ origin: true, credentials: true }));
 app.options('*', cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-//app.use(logger({ path: "log/express.log"}));
 app.use(cookieParser());
 app.use(session({
 	secret: process.env.SESSION_SECRET,
@@ -30,10 +28,6 @@ app.use(session({
 	saveUninitialized: false,
 	resave: false
 }));
-
-var tokens = fs.readFileSync("./.tokens", "utf8").trim("")
-	.split("\n").filter(Boolean).map((line) => line.split(":"))
-	.reduce((obj, [access_token, access_secret]) => ({...obj, [access_token]: access_secret}), {});
 
 app.get('/sessions/connect', oauthSession.connectSession);
 app.get('/sessions/callback', oauthSession.callbackSession);
@@ -52,7 +46,6 @@ const protected_routes = routes.filter(route => Boolean(route.protected)).map(ro
 
 app.use(function(req, res, next){
 	req.models = models;
-	req.tokens = tokens;
 
 	const {oauthAccessToken=null, oauthAccessTokenSecret=null} = req.session;
 	if(oauthAccessToken === null || oauthAccessTokenSecret === null){

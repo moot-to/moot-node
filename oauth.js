@@ -1,20 +1,14 @@
-var fs = require('fs')
 var oauth = require('oauth');
 var inspect = require('util-inspect');
 
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/config/config.json')[env];
 
-const saveToken = (access_token, access_secret, tokens) => {
-	tokens = {...tokens, [access_token]: access_secret}
-	fs.writeFileSync(".tokens", Object.entries(tokens).map(([key, val]) => `${key}:${val}`).join("\n"))
-}
-
 var CONSUMER_KEY = process.env.CONSUMER_KEY;
 var CONSUMER_SECRET = process.env.CONSUMER_SECRET;
 
 var consumer = new oauth.OAuth("https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token", 
-    CONSUMER_KEY, CONSUMER_SECRET, "1.0A", "http://127.0.0.1:8080/sessions/callback", "HMAC-SHA1");
+    CONSUMER_KEY, CONSUMER_SECRET, "1.0A", config.callback, "HMAC-SHA1");
 
 const connectSession = (req, res) => {
   consumer.getOAuthRequestToken(function(error, oauthToken, oauthTokenSecret, results){
@@ -35,7 +29,6 @@ const callbackSession = (req, res) => {
     } else {
 			req.session.oauthAccessToken = oauthAccessToken;
 			req.session.oauthAccessTokenSecret = oauthAccessTokenSecret;
-			saveToken(oauthAccessToken, oauthAccessTokenSecret, req.tokens)
       res.redirect(config.redirectAfterLogin);
     }
   })
