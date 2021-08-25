@@ -1,6 +1,9 @@
 const { Op } = require('sequelize')
 const fetch = require('node-fetch')
 
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/config/config.json')[env];
+
 const me = (req, res) => {
 	req.client.get('account/verify_credentials', {}, function(error, account, response){
 		if(error){ return res.json(error[0]) }
@@ -71,6 +74,17 @@ const dislikeTweet = (req, res) => {
 	req.client.post('favorites/destroy', {id: req.params.id}, function (error, tweet, response){
 		if(error){ return res.json(error[0]) }
 		return res.json(tweet)
+	})
+}
+
+const logout = (req, res) => {
+	req.session.destroy(function(err){
+		if(err) {
+			return res.json({error: "An error occured"});
+		}else {
+			req.session = null;
+			res.json({error: "Logged out"});
+		}
 	})
 }
 

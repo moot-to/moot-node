@@ -2,6 +2,9 @@ var fs = require('fs')
 var oauth = require('oauth');
 var inspect = require('util-inspect');
 
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/config/config.json')[env];
+
 const saveToken = (access_token, access_secret, tokens) => {
 	tokens = {...tokens, [access_token]: access_secret}
 	fs.writeFileSync(".tokens", Object.entries(tokens).map(([key, val]) => `${key}:${val}`).join("\n"))
@@ -33,7 +36,7 @@ const callbackSession = (req, res) => {
 			req.session.oauthAccessToken = oauthAccessToken;
 			req.session.oauthAccessTokenSecret = oauthAccessTokenSecret;
 			saveToken(oauthAccessToken, oauthAccessTokenSecret, req.tokens)
-      res.json({oauth_access_token: oauthAccessToken});
+      res.redirect(config.redirectAfterLogin);
     }
   })
 }
