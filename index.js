@@ -34,7 +34,7 @@ app.get('/sessions/callback', oauthSession.callbackSession);
 
 const routes = [
 	{ alias: 'me', path: '/me', callback: resolvers.me, protected: true },
-	{ alias: 'tree', path: '/tree/:id', callback: resolvers.getTree, protected: true },
+	{ alias: 'tree', path: '/tree/:id', callback: resolvers.getTree },
 	{ alias: 'status', path: '/status/:id', callback: resolvers.getTweet },
 	{ alias: 'tweet', path: '/tweet', callback: resolvers.sendTweet, protected: true },
 	{ alias: 'like', path: '/like/:id', callback: resolvers.likeTweet, protected: true },
@@ -47,15 +47,15 @@ const protected_routes = routes.filter(route => Boolean(route.protected)).map(ro
 app.use(function(req, res, next){
 	req.models = models;
 
-	const {oauthAccessToken=null, oauthAccessTokenSecret=null} = req.session;
-	if(oauthAccessToken === null || oauthAccessTokenSecret === null){
-		return res.json({error: "Unauthorized session"})
-	}
-
 	const rootpath = req.path.split("/")[1];
 	if(protected_routes.includes(rootpath)){
+		const {oauthAccessToken=null, oauthAccessTokenSecret=null} = req.session;
+		if(oauthAccessToken === null || oauthAccessTokenSecret === null){
+			return res.json({error: "Unauthorized session"})
+		}
 		req.client = new Twitter({ consumer_key: CONSUMER_KEY, consumer_secret: CONSUMER_SECRET, access_token_key: oauthAccessToken, access_token_secret: oauthAccessTokenSecret });
 	}
+
 	next();
 })
 
