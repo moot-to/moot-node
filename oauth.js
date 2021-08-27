@@ -29,6 +29,7 @@ const callbackSession = (req, res) => {
     } else {
 			req.session.oauthAccessToken = oauthAccessToken;
 			req.session.oauthAccessTokenSecret = oauthAccessTokenSecret;
+			req.session.liked_tweets = [];
       res.redirect(config.redirectAfterLogin);
     }
   })

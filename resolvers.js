@@ -44,7 +44,9 @@ const getTweet = (req, res, next, raw=false) => {
 				return null;
 			}
 			return resp.json()
-		}).then(resp => raw ? resp : resp && res.json(resp))
+		}).then(resp => raw ? resp : resp && res.json({
+			...resp, favorited: req.session.liked_tweets ? req.session.liked_tweets.includes(req.params.id) : false
+		}))
 }
 
 const sendTweet = (req, res) => {
@@ -65,6 +67,7 @@ const sendTweet = (req, res) => {
 
 const likeTweet = (req, res) => {
 	req.client.post('favorites/create', {id: req.params.id}, function (error, tweet, response){
+		req.session.liked_tweets = [...req.session.liked_tweets, req.params.id];
 		if(error){ return res.json(error[0]) }
 		return res.json(tweet)
 	})
@@ -72,6 +75,7 @@ const likeTweet = (req, res) => {
 
 const dislikeTweet = (req, res) => {
 	req.client.post('favorites/destroy', {id: req.params.id}, function (error, tweet, response){
+		req.session.liked_tweets = req.session.liked_tweets.filter(id => id !== req.params.id);
 		if(error){ return res.json(error[0]) }
 		return res.json(tweet)
 	})
