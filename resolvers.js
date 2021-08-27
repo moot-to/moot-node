@@ -59,6 +59,10 @@ const sendTweet = (req, res) => {
 		conversation_control	"community"
 	*/
 	var params = {status: req.query.status}
+
+	const atob = (_) => Buffer.from(_, 'base64').toString('latin1')
+	params.status = decodeURIComponent(escape(atob(params.status)));
+
 	if(req.query.repliedTo){
 		params.in_reply_to_status_id = req.query.repliedTo;
 	}
