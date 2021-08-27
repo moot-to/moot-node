@@ -1,4 +1,4 @@
-const { Op } = require('sequelize')
+const { Op, literal } = require('sequelize')
 const fetch = require('node-fetch')
 
 const env = process.env.NODE_ENV || 'development';
@@ -43,6 +43,7 @@ const getTweet = (req, res, next, raw=false) => {
 				res.json({error: 'Deleted'})
 				return null;
 			}
+
 			return resp.json()
 		}).then(resp => raw ? resp : resp && res.json({
 			...resp, favorited: req.session.liked_tweets ? req.session.liked_tweets.includes(req.params.id) : false
@@ -53,6 +54,10 @@ const sendTweet = (req, res) => {
 	const ctrl_if_not_exists = ["status"].find(required_param => !Object.keys(req.query).includes(required_param));
 	if(ctrl_if_not_exists){ return res.json({error: `${ctrl_if_not_exists} cannot be empty`}) }
 
+	/*
+		conversation_control: "by_invitation",
+		conversation_control	"community"
+	*/
 	var params = {status: req.query.status}
 	if(req.query.repliedTo){
 		params.in_reply_to_status_id = req.query.repliedTo;
@@ -81,6 +86,11 @@ const dislikeTweet = (req, res) => {
 	})
 }
 
+const random = async (req, res) => {
+	const moot = await req.models.Moot.findOne({attributes: ['statusId'], order: literal('rand()'), where: {repliedTo: null, statusId: {[Op.not]: null}}, raw: true});
+	return res.json(moot)
+}
+
 const logout = (req, res) => {
 	req.session.destroy(function(err){
 		if(err) {
@@ -99,5 +109,6 @@ module.exports = {
 	sendTweet,
 	likeTweet,
 	dislikeTweet,
+	random,
 	logout
 }

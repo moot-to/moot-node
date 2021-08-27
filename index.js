@@ -39,6 +39,7 @@ const routes = [
 	{ alias: 'tweet', path: '/tweet', callback: resolvers.sendTweet, protected: true },
 	{ alias: 'like', path: '/like/:id', callback: resolvers.likeTweet, protected: true },
 	{ alias: 'dislike', path: '/dislike/:id', callback: resolvers.dislikeTweet, protected: true },
+	{ alias: 'random', path: '/random', callback: resolvers.random, protected: true },
 	{ alias: 'logout', path: '/logout', callback: resolvers.logout, protected: true },
 ];
 
