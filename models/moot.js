@@ -4,16 +4,13 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Moot extends Model {
 		static associate(models) {
-			Moot.hasMany(models.Moot, {
-				foreignKey: 'statusId'
-			})
 		}
   };
-	/*  0 = because, 1 = but, 2 = however */
+	/*  0 = because, 1 = but, 2 = however, 3 = fallacy */
   Moot.init({
 		statusId: DataTypes.STRING,
 		type: {
-			type: DataTypes.ENUM('0', '1', '2'),
+			type: DataTypes.ENUM('0', '1', '2', '3'),
 			allowNull: true
 		},
 		repliedTo: DataTypes.STRING

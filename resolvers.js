@@ -67,6 +67,10 @@ const sendTweet = (req, res) => {
 		params.in_reply_to_status_id = req.query.repliedTo;
 	}
 
+	if(req.query.fallacyId === 'null'){
+		delete req.query.fallacyId;
+	}
+
 	req.client.post('statuses/update', params, function (error, tweet, response){
 		if(error){ return res.json(error[0]) }
 		req.models.Moot.create({ statusId: tweet.id_str, ...req.query})
@@ -106,6 +110,17 @@ const logout = (req, res) => {
 	})
 }
 
+const insertFallacy = async (req, res) => {
+	const fallacy = await req.models.Fallacy.create({name: req.query.name, source: req.query.source})
+	res.json({status: 'OK'})
+}
+
+const getFallacies = (req, res) => {
+	req.models.Fallacy.findAll().then(resp => {
+		return res.json(resp)
+	})
+}
+
 module.exports = {
 	me,
 	getTweet,
@@ -114,5 +129,7 @@ module.exports = {
 	likeTweet,
 	dislikeTweet,
 	random,
-	logout
+	logout,
+	insertFallacy,
+	getFallacies
 }
