@@ -29,10 +29,14 @@ const getTree = async (req, res, next) => {
 		if(tweet === null){
 			return res.json({error: "No tweet."})
 		}
-		root = await req.models.Moot.create({ statusId: tweet.id_str }, {raw: true});
+		if(tweet.id_str){
+			root = await req.models.Moot.create({ uuid: Math.random().toString().replace("0.", ""), statusId: tweet.id_str }, {raw: true});
+		}
 	}
 
-	await getReplies(root.statusId);
+	if(root.statusId){
+		await getReplies(root.statusId);
+	}
 	return res.json([root, ...acc_replies])
 }
 
@@ -48,6 +52,15 @@ const getTweet = (req, res, next, raw=false) => {
 		}).then(resp => raw ? resp : resp && res.json({
 			...resp, favorited: req.session.liked_tweets ? req.session.liked_tweets.includes(req.params.id) : false
 		}))
+}
+
+const getUUIDStatus = (req, res) => {
+	return req.models.Moot.findOne({where: {uuid: req.params.id}}).then(resp => {
+		if(resp === null){
+			return res.json({error: 'None'})
+		}
+		res.json({statusId: resp.statusId})
+	})
 }
 
 const sendTweet = (req, res) => {
@@ -74,6 +87,27 @@ const sendTweet = (req, res) => {
 	req.client.post('statuses/update', params, function (error, tweet, response){
 		if(error){ return res.json(error[0]) }
 		req.models.Moot.create({ statusId: tweet.id_str, ...req.query})
+		return res.json(tweet)
+	})
+}
+
+const sendMoot = async (req, res) => {
+	var params = {status: req.query.status}
+	const moot = await req.models.Moot.create({uuid: Math.random().toString().replace("0.", "")}, {raw: true})
+
+	const atob = (_) => Buffer.from(_, 'base64').toString('latin1')
+	params.status = decodeURIComponent(escape(atob(params.status)));
+	params.status = `${params.status}
+
+	${config.redirectAfterLogin}/r/${moot.uuid}	
+	`;
+
+	req.client.post('statuses/update', params, function (error, tweet, response){
+		if(error){
+			req.models.Moot.destroy({where: {id: moot.id}})
+			return res.json(error[0])
+		}
+		req.models.Moot.update({statusId: tweet.id_str}, {where: {id: moot.id}})
 		return res.json(tweet)
 	})
 }
@@ -121,15 +155,23 @@ const getFallacies = (req, res) => {
 	})
 }
 
+const mainStatuses = async (req, res) => {
+	const statuses = await req.models.Moot.findAll({limit: 5, order: literal('rand()'), where: {repliedTo: null, statusId: {[Op.not]: null}}, raw: true});
+	res.json(statuses)
+}
+
 module.exports = {
 	me,
 	getTweet,
+	getUUIDStatus,
 	getTree,
 	sendTweet,
+	sendMoot,
 	likeTweet,
 	dislikeTweet,
 	random,
 	logout,
 	insertFallacy,
-	getFallacies
+	getFallacies,
+	mainStatuses
 }
